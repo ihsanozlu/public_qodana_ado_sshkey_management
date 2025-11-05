@@ -1,0 +1,24 @@
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+#QODANA
+QODANA_BASE_URL = os.getenv("QODANA_BASE_URL")
+QODANA_ORG_ID= os.getenv("QODANA_ORG_ID")
+QODANA_TEAM = os.getenv("QODANA_TEAM")
+QODANA_TEAM_NAME = os.getenv("QODANA_TEAM_NAME")
+QODANA_COOKIE = os.getenv("QODANA_COOKIE")
+QODANA_TOKEN = os.getenv("QODANA_TOKEN")
+
+#ADO
+ADO_BASE_URL = os.getenv("ADO_BASE_URL")
+ADO_BEARER_TOKEN = os.getenv("ADO_BEARER_TOKEN")
+ADO_ORGANIZATION = os.getenv("ADO_ORGANIZATION")
+ADO_PROJECT = os.getenv("ADO_PROJECT")
+ADO_SSH_URL = os.getenv("ADO_SSH_URL")
+ADO_X_TFS_SESSION = os.getenv("ADO_X_TFS_SESSION")
+ADO_TARGET_ACCOUNT = os.getenv("ADO_TARGET_ACCOUNT")
+ADO_SERVICE_HOST = os.getenv("ADO_SERVICE_HOST")
+ADO_COOKIE = os.getenv("ADO_COOKIE")
+ADO_COOKIE_FOR_GET_SSH_KEYS = os.getenv("ADO_COOKIE_FOR_GET_SSH_KEYS")
