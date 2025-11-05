@@ -22,8 +22,8 @@ def is_expired_date(date_str: str) -> bool:
         print(f"⚠️ Invalid ado_expireDate format: {date_str}")
         return True
 
-    now = datetime.now(timezone.utc) + timedelta(days=363)
-    #now = datetime.now(timezone.utc)
+    #now = datetime.now(timezone.utc) + timedelta(days=363)
+    now = datetime.now(timezone.utc)
 
     expired = expire_dt < now 
     #print(f"DEBUG: expire_dt={expire_dt}, now={now}, expired={expired}")
