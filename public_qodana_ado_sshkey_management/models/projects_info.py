@@ -6,5 +6,6 @@ class ProjectInfo:
     qp_id: str
     qp_ssh_pubkey: str = ""
     qp_ssh_keyID: str = ""
+    qp_isAccessible: bool = False
     ado_authorizationId: str = ""
     ado_expireDate: str = ""

@@ -10,7 +10,7 @@ import time
 import json
 from urllib.parse import quote
 from ..models.projects_info import ProjectInfo
-from qodana_ado_sshkey_management.utils.storage import save_projects_info
+from public_qodana_ado_sshkey_management.utils.storage import save_projects_info
 
 def get_all_projects() -> list[ProjectInfo]:
     url = f"{QODANA_BASE_URL}/api/v1/teams/{QODANA_TEAM}/projects"
@@ -72,5 +72,62 @@ def get_or_create_qodana_ssh_keys(projects):
                 print(f"❌ Could not parse JSON for {project_name}: {resp.text}")
         else:
             print(f"❌ Qodana returned {resp.status_code} for {project_name}: {resp.text}")
+        time.sleep(1)
+    return projects
+
+def authorize_qodana_projects(projects):
+    for project in projects:
+        project_name = getattr(project, "qp_name", None)
+        ssh_key_id = getattr(project,"qp_ssh_keyID",None)
+        ssh_public_key = getattr(project,"qp_ssh_pubkey",None)
+        ado_authorizationId = getattr(project,"ado_authorizationId",None)
+        ado_expireDate = getattr(project,"ado_expireDate",None)
+        qp_isAccessible = getattr(project,"qp_isAccessible",False)
+        if not project_name:
+            print("⚠️ Skipping project without qp_name")
+            continue
+
+        if not ssh_public_key and not ssh_key_id:
+            print(f"⏭️  Skipping {project_name} (SSH key is missing)")
+            continue
+
+        if not ado_authorizationId and not ado_expireDate:
+            print(f"⏭️  Skipping {project_name} (ADO info is missing)")
+            continue
+        if bool(qp_isAccessible):
+            print(f"⏭️  Skipping {project_name} (it is already authorized.)")
+            continue
+
+        ADO_SSH_URL = f"git@ssh.dev.azure.com:v3/{ADO_ORGANIZATION}/{ADO_PROJECT}"
+        # Build the exact encoded SSH URL
+        ssh_url = f"{ADO_SSH_URL}/{project_name}"
+        encoded_ssh_url = quote(ssh_url, safe="")  # fully encode everything
+        url = f"{QODANA_BASE_URL}/api/v1/organizations/{QODANA_ORG_ID}/probe-repository?sshUrl={encoded_ssh_url}&sshKeyId={ssh_key_id}"
+
+        print(f"🔑 Authorized projects in QODANA: {project_name}")
+        print(f"🌐 URL: {url}")
+
+        headers = {"accept": "*/*"}
+        cookies = {"user-cookie-session": QODANA_COOKIE}
+
+        resp = requests.get(url, headers=headers, cookies=cookies)
+
+        if resp.status_code == 200:
+            try:
+                data = resp.json()
+                isAccessible = data.get("isAccessible") 
+
+                if not isAccessible:
+                    print(f"⚠️ isAccessible is false for {project_name}")
+                    continue
+
+                project.qp_isAccessible = isAccessible
+                save_projects_info(projects)
+                print("💾 projects_info.json updated safely (existing data preserved).")
+
+            except json.JSONDecodeError:
+                print(f"❌ Could not parse JSON for {project_name}: {resp.text}")
+        else:
+            print(f"❌ Qodana returned for isAccessible {resp.status_code} for {project_name}: {resp.text}")
         time.sleep(1)
     return projects

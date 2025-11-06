@@ -1,8 +1,9 @@
-from .services.qodana_api import get_all_projects, get_or_create_qodana_ssh_keys
+from .services.qodana_api import get_all_projects, get_or_create_qodana_ssh_keys,authorize_qodana_projects
 from .services.ado_api import create_ssh_key_at_ado,get_created_date_ssh_key,refresh_expired_ssh_keys
 from .utils.storage import load_projects_info, save_projects_info
 from .utils.comparison import check_if_projects_exist
 from .utils.date_utils import is_expired_date
+from .utils.project_utils import check_if_new_project_exist
 
 def main():
     print("🚀 Starting Qodana–ADO Sync...")
@@ -16,20 +17,7 @@ def main():
     print(f"✅ Found {len(fetched_projects)} Qodana projects")
     check_if_projects_exist(old_projects, fetched_projects)
 
-    merged_projects = []
-
-    old_map = {p.qp_name: p for p in old_projects}
-    for p in fetched_projects:
-        existing = old_map.get(p.qp_name)
-        if existing:
-            # Preserve SSH and other metadata
-            p.qp_name = getattr(existing, "qp_name", None)
-            p.qp_id = getattr(existing, "qp_id", None)
-            p.qp_ssh_pubkey = getattr(existing, "qp_ssh_pubkey", None)
-            p.qp_ssh_keyID = getattr(existing, "qp_ssh_keyID", None)
-            p.ado_authorizationId = getattr(existing, "ado_authorizationId", None)
-            p.ado_expireDate = getattr(existing, "ado_expireDate", None)
-        merged_projects.append(p)
+    merged_projects = check_if_new_project_exist(old_projects, fetched_projects)
 
     save_projects_info(merged_projects)
     print("💾 projects_info.json safely updated (existing SSH keys preserved).")
@@ -82,6 +70,11 @@ def main():
         final_projects = list(final_old_map.values())
 
     save_projects_info(final_projects)
+
+    authorized_projects_at_qodana = authorize_qodana_projects(final_projects)
+    print(f"🔑 Authorizing projects at Qodana is completed. Updated {len(authorized_projects_at_qodana)} projects.")
+
+    save_projects_info(authorized_projects_at_qodana)
 
 if __name__ == "__main__":
     main()
