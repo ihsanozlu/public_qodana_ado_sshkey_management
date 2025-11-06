@@ -15,7 +15,7 @@ from urllib.parse import quote
 from ..models.projects_info import ProjectInfo
 from ..utils.date_utils import calculate_expiration_from_createdTime
 from .qodana_api import get_or_create_qodana_ssh_keys
-from qodana_ado_sshkey_management.utils.storage import save_projects_info
+from public_qodana_ado_sshkey_management.utils.storage import save_projects_info
 from datetime import datetime, timedelta
 
 def create_ssh_key_at_ado(projects):
@@ -59,7 +59,7 @@ def create_ssh_key_at_ado(projects):
             ],
             "dataProviderContext": {
                 "properties": {
-                    "displayName": f"qodana_{project_name}",
+                    "displayName": f"qodana_{project_name}_{(datetime.utcnow()).isoformat(timespec="seconds")}",
                     "publicData": project_ssh_publickey,
                     "validFrom": (datetime.utcnow()).isoformat(timespec="milliseconds") + "Z",
                     "validTo": (datetime.utcnow() + timedelta(days=365)).isoformat(timespec="milliseconds") + "Z",
