@@ -200,6 +200,7 @@ def refresh_expired_ssh_keys(expired_projects):
     for project in expired_projects:
         project.qp_ssh_pubkey = None
         project.qp_ssh_keyID = None
+        project.qp_isAccessible = False
         project.ado_authorizationId = None
         project.ado_expireDate = None
 
