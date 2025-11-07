@@ -14,6 +14,7 @@ import json
 from urllib.parse import quote
 from ..models.projects_info import ProjectInfo
 from ..utils.date_utils import calculate_expiration_from_createdTime
+from ..utils.log_utils import log_ado_authorization_event
 from .qodana_api import get_or_create_qodana_ssh_keys
 from public_qodana_ado_sshkey_management.utils.storage import save_projects_info
 from datetime import datetime, timedelta
@@ -182,6 +183,13 @@ def get_created_date_ssh_key(projects):
                 project.ado_expireDate = expireDate
                 save_projects_info(projects)
                 print("💾 Updated projects_info.json with ExpirationDate")
+
+                log_ado_authorization_event(
+                    project_name=project.qp_name,
+                    authorization_id=project.ado_authorizationId,
+                    expire_date=expireDate,
+                    event="created" if not getattr(project, "qp_isAccessible", False) else "refreshed"
+                )
             except json.JSONDecodeError:
                 print(f"❌ Could not parse JSON for {project_name}: {resp.text}")
         else:
